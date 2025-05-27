@@ -10,6 +10,21 @@
     // The workspace folder within the container
     "workspaceFolder": "/app",
 
+    // *** ADD THIS NEW SECTION ***
+    "containerEnv": {
+        "POSTGRES_DB": "newsaggregator_db",
+        "POSTGRES_USER": "newsaggregator_user",
+        "POSTGRES_PASSWORD": "newsaggregator_password",
+        "POSTGRES_HOST": "db",      // Matches the service name of your database in docker-compose.yml
+        "POSTGRES_PORT": "5432",
+        "REDIS_HOST": "redis",      // Matches the service name of your redis in docker-compose.yml
+        "REDIS_PORT": "6379",
+        "CELERY_BROKER_URL": "redis://redis:6379/0",
+        "CELERY_RESULT_BACKEND": "redis://redis:6379/0",
+        "DJANGO_SETTINGS_MODULE": "news_aggregator.settings" // Important: Ensure 'news_aggregator.settings' is your actual Django project's settings path
+    },
+    // **************************
+
     // Ports to forward automatically from the container to your local machine (browser access)
     "forwardPorts": [8000, 6379], // 8000 for Django, 6379 for Redis if you want to access it directly
 
@@ -35,7 +50,7 @@
 
     // Commands to run after the Codespace is created and services are up.
     // This is a good place for initial setup like migrations and collecting static files.
-    "postCreateCommand": "bash -c \"docker compose exec web python manage.py migrate --noinput && docker compose exec web python manage.py collectstatic --noinput && echo 'Initial setup complete!'\"",
+    "postCreateCommand": "bash -c \"docker compose exec web python manage.py migrate --noinput && docker compose exec web python manage.py collectstatic --noinput && echo 'Initial setup complete!'\""
 
     // You might want to uncomment and adjust these if you need a specific remote user or features
     // "remoteUser": "root", // Use if your Dockerfile is running as root (often default for simple images)
