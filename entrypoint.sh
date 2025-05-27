@@ -3,52 +3,50 @@
 # Exit on any error
 set -e
 
-# Function to wait for database
-wait_for_db() {
-    echo "Waiting for database..."
-    while ! nc -z db 5432; do
+# Function to wait for PostgreSQL
+wait_for_postgres() {
+    echo "Waiting for PostgreSQL to be ready..."
+    while ! nc -z $POSTGRES_HOST $POSTGRES_PORT; do
         sleep 1
     done
-    echo "Database is ready!"
+    echo "PostgreSQL is ready!"
 }
 
 # Function to wait for Redis
 wait_for_redis() {
-    echo "Waiting for Redis..."
-    while ! nc -z redis 6379; do
+    echo "Waiting for Redis to be ready..."
+    while ! nc -z $REDIS_HOST $REDIS_PORT; do
         sleep 1
     done
     echo "Redis is ready!"
 }
 
-# Wait for services if running web service
-if [ "$1" = "web" ] || [ "$1" = "gunicorn" ]; then
-    wait_for_db
-    wait_for_redis
-    
-    echo "Running database migrations..."
-    python manage.py migrate --noinput
-    
-    echo "Collecting static files..."
-    python manage.py collectstatic --noinput
-    
-    echo "Starting Gunicorn..."
-    exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3
-fi
+# Wait for services
+wait_for_postgres
+wait_for_redis
 
-# Wait for services if running celery
-if [ "$1" = "celery" ]; then
-    wait_for_db
-    wait_for_redis
-    
-    if [ "$2" = "worker" ]; then
-        echo "Starting Celery Worker..."
-        exec celery -A config worker -l info
-    elif [ "$2" = "beat" ]; then
-        echo "Starting Celery Beat..."
-        exec celery -A config beat -l info --scheduler django_celery_beat.schedulers.DatabaseScheduler
-    fi
-fi
-
-# Execute the original command
-exec "$@"
+# Handle different commands
+case "$1" in
+    "web")
+        echo "Starting Django web server..."
+        python manage.py migrate --noinput
+        python manage.py collectstatic --noinput
+        exec python manage.py runserver 0.0.0.0:8000
+        ;;
+    "celery")
+        if [ "$2" = "worker" ]; then
+            echo "Starting Celery worker..."
+            exec celery -A news_aggregator worker --loglevel=info
+        elif [ "$2" = "beat" ]; then
+            echo "Starting Celery beat..."
+            exec celery -A news_aggregator beat --loglevel=info
+        else
+            echo "Unknown celery command: $2"
+            exit 1
+        fi
+        ;;
+    *)
+        echo "Executing command: $@"
+        exec "$@"
+        ;;
+esac

@@ -4,7 +4,8 @@ FROM --platform=linux/amd64 python:3.9-slim
 # Set environment variables
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
-ENV DJANGO_SETTINGS_MODULE config.settings
+# Fix: Use consistent settings module name
+ENV DJANGO_SETTINGS_MODULE news_aggregator.settings
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -29,23 +30,19 @@ RUN pip install --no-cache-dir --upgrade pip \
 # Copy the entire Django project into the container
 COPY . /app/
 
-# Create necessary directories
+# Create necessary directories and set permissions
 RUN mkdir -p /app/static /app/media
 
-# Collect static files for production (important for Gunicorn/Nginx)
-# Use || true to prevent build failure if collectstatic fails
-RUN python manage.py collectstatic --noinput || true
+# Make entrypoint script executable
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
-# Create a non-root user for security
-RUN adduser --disabled-password --gecos '' appuser \
-    && chown -R appuser:appuser /app
-
-# Switch to non-root user
-USER appuser
+# DON'T switch to non-root user for Codespaces compatibility
+# Codespaces handles user management differently
+# USER appuser
 
 # Expose the port your Django application will run on
 EXPOSE 8000
 
 # Define the default command to run the application
-# This will be overridden by docker-compose commands
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
