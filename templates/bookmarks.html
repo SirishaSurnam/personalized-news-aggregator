@@ -1,0 +1,73 @@
+ {% extends 'base.html' %}
+{% block title %}Bookmarks - News Aggregator{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-bookmark"></i> My Bookmarks</h2> [cite: 117]
+    <span class="badge bg-primary">{{ page_obj.paginator.count }} articles</span> [cite: 117]
+</div>
+{% if page_obj.object_list %}
+{% for bookmark in page_obj %}
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-10">
+                <h5 class="card-title">
+                    <a href="{% url 'article_detail' bookmark.article.id %}" class="text-decoration-none"> [cite: 118]
+                        {{ bookmark.article.title }} [cite: 118]
+                    </a>
+                </h5>
+
+                <div class="mb-2"> [cite: 119]
+                    <span class="badge bg-{{ bookmark.article.bias_color }}">
+                        {{ bookmark.article.get_bias_score_display }} [cite: 119]
+                    </span>
+                    <small class="text-muted ms-2">
+                        <i class="fas fa-calendar"></i> {{ bookmark.article.published_date|date:"M d, Y" }} [cite: 120]
+                    </small>
+                    <small class="text-muted ms-2">
+                        <i class="fas fa-newspaper"></i> {{ bookmark.article.source }} [cite: 121]
+                    </small>
+                    <small class="text-muted ms-2">
+                        <i class="fas fa-bookmark"></i> Saved {{ bookmark.created_at|date:"M d, Y" }} [cite: 121]
+                    </small>
+                </div>
+
+                {% if bookmark.article.summary %} [cite: 122]
+                <p class="card-text">{{ bookmark.article.summary }}</p> [cite: 123]
+                {% else %}
+                <p class="card-text">{{ bookmark.article.description|truncatewords:30 }}</p> [cite: 123]
+                {% endif %}
+
+                <div class="article-categories"> [cite: 123]
+                    {% for category in bookmark.article.categories.all %} [cite: 124]
+                    <span class="badge bg-light text-dark me-1">{{ category.name }}</span> [cite: 124]
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-md-2 text-end"> [cite: 125]
+                <button class="btn btn-warning bookmark-btn mb-2"
+                        data-article-id="{{ bookmark.article.id }}"
+                        data-bookmarked="true"> [cite: 125]
+                    <i class="fas fa-bookmark"></i> Remove [cite: 125]
+                </button>
+
+                <div>
+                    <a href="{{ bookmark.article.url }}" target="_blank" class="btn btn-sm btn-outline-primary"> [cite: 126]
+                        <i class="fas fa-external-link-alt"></i> Read Full [cite: 127]
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="text-center py-5">
+    <div class="mb-3">
+        <i class="fas fa-bookmark fa-3x text-muted"></i>
+    </div>
+    <h4>No bookmarked articles yet.</h4>
+    <p class="text-muted">Bookmark articles from the <a href="{% url 'home' %}">home page</a> to save them for later.</p>
+</div>
+{% endif %}

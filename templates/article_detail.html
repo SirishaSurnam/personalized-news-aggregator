@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ article.title }} - News Aggregator{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h1 class="card-title">{{ article.title }}</h1>
+                <div class="mb-3 text-muted small">
+                    <span><i class="fas fa-newspaper"></i> {{ article.source }}</span> |
+                    <span><i class="fas fa-calendar"></i> {{ article.published_date|date:"M d, Y H:i" }}</span>
+                    {% if article.author %}
+                        | <span><i class="fas fa-user-edit"></i> {{ article.author }}</span>
+                    {% endif %}
+                    {% if article.get_bias_score_display %}
+                        | <span class="badge bg-{{ article.bias_color|default:"secondary" }}">{{ article.get_bias_score_display }}</span>
+                    {% endif %}
+                </div>
+
+                {% if article.image_url %}
+                <div class="mb-3">
+                    <img src="{{ article.image_url }}" 
+                         class="img-fluid rounded" 
+                         alt="{{ article.title }}" 
+                         loading="lazy"
+                         onerror="this.onerror=null;this.src='{% static 'images/placeholder.jpg' %}';">
+                </div>
+                {% endif %}
+
+                {% if article.summary %}
+                    <div class="mt-4">
+                        <h5>Summary</h5>
+                        <p class="card-text text-secondary fst-italic">{{ article.summary }}</p>
+                    </div>
+                {% endif %}
+
+                {% if article.description %}
+                    <div class="mt-4">
+                        <h5>Description</h5>
+                        <p class="card-text">{{ article.description }}</p>
+                    </div>
+                {% endif %}
+
+                {% if article.content %}
+                    <div class="mt-4">
+                        <h5>Full Content</h5>
+                        <div class="card-text">{{ article.content|linebreaksbr }}</div>
+                    </div>
+                {% endif %}
+
+                {% if article.categories.all %}
+                    <div class="article-categories mt-4">
+                        <h6>Categories:</h6>
+                        {% for category in article.categories.all %}
+                            <span class="badge bg-info text-light me-1 mb-1">{{ category.name }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <hr>
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <a href="{{ article.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                        <i class="fas fa-external-link-alt"></i> Read Full Article
+                    </a>
+                    {% if user.is_authenticated %}
+                    <button class="btn {% if is_bookmarked %}btn-warning{% else %}btn-outline-warning{% endif %} bookmark-btn"
+                            data-article-id="{{ article.id }}"
+                            data-bookmarked="{% if is_bookmarked %}true{% else %}false{% endif %}"
+                            type="button">
+                        <i class="fas fa-bookmark"></i>
+                        <span class="bookmark-text">{% if is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}</span>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-3">
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if user.is_authenticated %}
+<!-- CSRF Token for AJAX requests -->
+{% csrf_token %}
+
+<!-- Bookmark functionality script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const bookmarkBtn = document.querySelector('.bookmark-btn');
+    if (bookmarkBtn) {
+        bookmarkBtn.addEventListener('click', function() {
+            const articleId = this.dataset.articleId;
+            const isBookmarked = this.dataset.bookmarked === 'true';
+            
+            fetch(`/api/articles/${articleId}/bookmark/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: JSON.stringify({
+                    'action': isBookmarked ? 'remove' : 'add'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Toggle button state
+                    const newBookmarked = !isBookmarked;
+                    this.dataset.bookmarked = newBookmarked;
+                    this.className = `btn ${newBookmarked ? 'btn-warning' : 'btn-outline-warning'} bookmark-btn`;
+                    this.querySelector('.bookmark-text').textContent = newBookmarked ? 'Bookmarked' : 'Bookmark';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating bookmark status.');
+            });
+        });
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

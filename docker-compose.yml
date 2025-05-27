@@ -1,0 +1,82 @@
+services:
+  web:
+    build: .
+    container_name: django_news_aggregator_web
+    entrypoint: ["./entrypoint.sh"]
+    command: ["web"]
+    volumes:
+      - .:/app
+      - static_volume:/app/static
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  db:
+    image: postgres:13-alpine
+    container_name: django_news_aggregator_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env
+    environment:
+      POSTGRES_DB: ${DB_NAME:-newsaggregator_db}
+      POSTGRES_USER: ${DB_USER:-newsaggregator_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-newsaggregator_password}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:6-alpine
+    container_name: django_news_aggregator_redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+
+  celery_worker:
+    build: .
+    container_name: django_news_aggregator_celery_worker
+    entrypoint: ["./entrypoint.sh"]
+    command: ["celery", "worker"]
+    volumes:
+      - .:/app
+    env_file:
+      - ./.env
+    depends_on:
+      web:
+        condition: service_started
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  celery_beat:
+    build: .
+    container_name: django_news_aggregator_celery_beat
+    entrypoint: ["./entrypoint.sh"]
+    command: ["celery", "beat"]
+    volumes:
+      - .:/app
+    env_file:
+      - ./.env
+    depends_on:
+      web:
+        condition: service_started
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:

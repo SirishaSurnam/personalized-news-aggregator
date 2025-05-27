@@ -1,0 +1,29 @@
+ 
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Register - News Aggregator{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header text-center">
+                <h3><i class="fas fa-user-plus"></i> Register</h3> [cite: 103]
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }} [cite: 104]
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-user-plus"></i> Register [cite: 104]
+                    </button>
+                </form>
+
+                <hr>
+                <div class="text-center">
+                    <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p> [cite: 106]
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
