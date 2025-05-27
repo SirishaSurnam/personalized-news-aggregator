@@ -1,41 +1,44 @@
 {
-    "name": "Django News Aggregator",
-    "dockerComposeFile": [
-        "../docker-compose.yml"
-    ],
-    "service": "web",
-    "workspaceFolder": "/app",
+    "name": "Django Development (No Docker)",
+    "image": "mcr.microsoft.com/devcontainers/python:3.9",
     
-    "containerEnv": {
-        "POSTGRES_DB": "newsaggregator_db",
-        "POSTGRES_USER": "newsaggregator_user", 
-        "POSTGRES_PASSWORD": "newsaggregator_password",
-        "POSTGRES_HOST": "db",
-        "POSTGRES_PORT": "5432",
-        "REDIS_HOST": "redis",
-        "REDIS_PORT": "6379",
-        "CELERY_BROKER_URL": "redis://redis:6379/0",
-        "CELERY_RESULT_BACKEND": "redis://redis:6379/0",
-        "DJANGO_SETTINGS_MODULE": "news_aggregator.settings"
-    },
-    
-    "forwardPorts": [8000, 6379],
-    
-    "customizations": {
-        "vscode": {
-            "settings": {
-                "python.pythonPath": "/usr/local/bin/python",
-                "python.languageServer": "Pylance",
-                "python.formatting.provider": "black",
-                "editor.formatOnSave": true
-            },
-            "extensions": [
-                "ms-python.python",
-                "ms-azuretools.vscode-docker"
-            ]
+    "features": {
+        "ghcr.io/devcontainers/features/postgresql:1": {
+            "version": "13"
+        },
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "18"
         }
     },
     
-    // Simplified post-create command
-    "postCreateCommand": "echo 'Codespace ready! Run: docker compose up to start services'"
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.black-formatter",
+                "ms-python.flake8",
+                "batisteo.vscode-django",
+                "ckolkman.vscode-postgres",
+                "eamodio.gitlens"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "python.formatting.provider": "black",
+                "python.linting.enabled": true,
+                "python.linting.flake8Enabled": true,
+                "editor.formatOnSave": true,
+                "python.linting.pylintEnabled": false
+            }
+        }
+    },
+    
+    "forwardPorts": [8000, 5432],
+    
+    "postCreateCommand": "bash .devcontainer/setup.sh",
+    
+    "containerEnv": {
+        "DJANGO_SETTINGS_MODULE": "config.settings"
+    },
+    
+    "remoteUser": "vscode"
 }
