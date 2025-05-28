@@ -1,44 +1,39 @@
 {
-    "name": "Django Development (No Docker)",
-    "image": "mcr.microsoft.com/devcontainers/python:3.9",
-    
-    "features": {
-        "ghcr.io/devcontainers/features/postgresql:1": {
-            "version": "13"
-        },
-        "ghcr.io/devcontainers/features/node:1": {
-            "version": "18"
-        }
-    },
-    
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "ms-python.python",
-                "ms-python.black-formatter",
-                "ms-python.flake8",
-                "batisteo.vscode-django",
-                "ckolkman.vscode-postgres",
-                "eamodio.gitlens"
-            ],
-            "settings": {
-                "python.defaultInterpreterPath": "/usr/local/bin/python",
-                "python.formatting.provider": "black",
-                "python.linting.enabled": true,
-                "python.linting.flake8Enabled": true,
-                "editor.formatOnSave": true,
-                "python.linting.pylintEnabled": false
-            }
-        }
-    },
-    
-    "forwardPorts": [8000, 5432],
-    
-    "postCreateCommand": "bash .devcontainer/setup.sh",
-    
-    "containerEnv": {
-        "DJANGO_SETTINGS_MODULE": "config.settings"
-    },
-    
-    "remoteUser": "vscode"
+  "name": "Django Dev (No Docker)",
+  "image": "mcr.microsoft.com/devcontainers/python:3.9",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18"
+    }
+  },
+  "containerEnv": {
+  "DJANGO_SECRET_KEY": "${{ secrets.DJANGO_SECRET_KEY }}",
+  "DJANGO_DEBUG": "${{ secrets.DJANGO_DEBUG }}",
+  "DJANGO_ALLOWED_HOSTS": "${{ secrets.DJANGO_ALLOWED_HOSTS }}",
+  "GOOGLE_GEMINI_API_KEY": "${{ secrets.GOOGLE_GEMINI_API_KEY }}",
+  "NEWS_API_KEY": "${{ secrets.NEWS_API_KEY }}",
+  "GUARDIAN_API_KEY": "${{ secrets.GUARDIAN_API_KEY }}"
+ },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "batisteo.vscode-django",
+        "ms-python.black-formatter",
+        "ms-python.flake8",
+        "eamodio.gitlens"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.formatting.provider": "black",
+        "python.linting.enabled": true,
+        "python.linting.flake8Enabled": true,
+        "editor.formatOnSave": true,
+        "python.linting.pylintEnabled": false
+      }
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "remoteUser": "vscode"
 }
+// Note: This configuration is designed to run without Docker, using the local Python environment.

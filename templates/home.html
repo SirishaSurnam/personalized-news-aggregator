@@ -1,58 +1,58 @@
- {% extends 'base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 {% block content %}
 <div class="row">
     <div class="col-md-3">
         <div class="card">
             <div class="card-header">
-                <h5><i class="fas fa-filter"></i> Filters</h5> [cite: 144]
+                <h5><i class="fas fa-filter"></i> Filters</h5>
             </div>
             <div class="card-body">
                 <form method="GET" id="filterForm">
                     <div class="mb-3">
-                        <label class="form-label">Search</label> [cite: 145]
-                        <input type="text" class="form-control" name="search" value="{{ search_query }}" placeholder="Search articles..."> [cite: 145]
+                        <label class="form-label">Search</label>
+                        <input type="text" class="form-control" name="search" value="{{ search_query }}" placeholder="Search articles...">
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Category</label> [cite: 146]
-                        <select class="form-select" name="category"> [cite: 147]
-                            <option value="">All Categories</option> [cite: 147]
-                            {% for category in categories %} [cite: 147]
-                            <option value="{{ category.slug }}" {% if category.slug == category_filter %}selected{% endif %}> [cite: 148]
-                                {{ category.name }} [cite: 148]
+                        <label class="form-label">Category</label>
+                        <select class="form-select" name="category">
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                            <option value="{{ category.slug }}" {% if category.slug == category_filter %}selected{% endif %}>
+                                {{ category.name }}
                             </option>
                             {% endfor %}
-                        </select> [cite: 149]
+                        </select>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Bias</label> [cite: 150]
-                        <select class="form-select" name="bias"> [cite: 150]
-                            <option value="">All Bias Types</option> [cite: 151]
-                            {% for value, label in bias_choices %} [cite: 151]
-                            <option value="{{ value }}" {% if value == bias_filter %}selected{% endif %}> [cite: 151]
-                                {{ label }} [cite: 152]
+                        <label class="form-label">Bias</label>
+                        <select class="form-select" name="bias">
+                            <option value="">All Bias Types</option>
+                            {% for value, label in bias_choices %}
+                            <option value="{{ value }}" {% if value == bias_filter %}selected{% endif %}>
+                                {{ label }}
                             </option>
                             {% endfor %}
-                        </select> [cite: 152]
+                        </select>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100"> [cite: 153]
-                        <i class="fas fa-search"></i> Apply Filters [cite: 153]
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Apply Filters
                     </button>
-                    <a href="{% url 'home' %}" class="btn btn-outline-secondary w-100 mt-2"> [cite: 154]
-                        <i class="fas fa-times"></i> Clear All [cite: 154]
+                    <a href="{% url 'home' %}" class="btn btn-outline-secondary w-100 mt-2">
+                        <i class="fas fa-times"></i> Clear All
                     </a>
                 </form>
             </div>
         </div>
 
-        {% if user.is_authenticated %} [cite: 155]
+        {% if user.is_authenticated %}
         <div class="card mt-3">
             <div class="card-body text-center">
-                <button id="refreshNews" class="btn btn-success"> [cite: 156]
-                    <i class="fas fa-sync-alt"></i> Refresh News [cite: 156]
+                <button id="refreshNews" class="btn btn-success">
+                    <i class="fas fa-sync-alt"></i> Refresh News
                 </button>
             </div>
         </div>
@@ -61,9 +61,9 @@
 
     <div class="col-md-9">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2><i class="fas fa-newspaper"></i> Latest News</h2> [cite: 157]
-            {% if user.is_authenticated %} [cite: 157]
-            <small class="text-muted">Personalized for your interests</small> [cite: 157]
+            <h2><i class="fas fa-newspaper"></i> Latest News</h2>
+            {% if user.is_authenticated %}
+            <small class="text-muted">Personalized for your interests</small>
             {% endif %}
         </div>
 
@@ -72,51 +72,51 @@
         <div class="card mb-3 article-card">
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-8"> [cite: 158]
+                    <div class="col-md-8">
                         <h5 class="card-title">
-                            <a href="{% url 'article_detail' article.id %}" class="text-decoration-none"> [cite: 158]
-                                {{ article.title }} [cite: 159]
+                            <a href="{% url 'article_detail' article.id %}" class="text-decoration-none">
+                                {{ article.title }}
                             </a>
                         </h5>
 
-                        <div class="mb-2"> [cite: 160]
-                            <span class="badge bg-{{ article.bias_color }}">{{ article.get_bias_score_display }}</span> [cite: 160]
+                        <div class="mb-2">
+                            <span class="badge bg-{{ article.bias_color }}">{{ article.get_bias_score_display }}</span>
                             <small class="text-muted ms-2">
-                                <i class="fas fa-calendar"></i> {{ article.published_date|date:"M d, Y" }} [cite: 161]
+                                <i class="fas fa-calendar"></i> {{ article.published_date|date:"M d, Y" }}
                             </small>
                             <small class="text-muted ms-2">
-                                <i class="fas fa-newspaper"></i> {{ article.source }} [cite: 161]
+                                <i class="fas fa-newspaper"></i> {{ article.source }}
                             </small>
                         </div>
 
-                        {% if article.summary %} [cite: 163]
-                        <p class="card-text">{{ article.summary }}</p> [cite: 163]
+                        {% if article.summary %}
+                        <p class="card-text">{{ article.summary }}</p>
                         {% else %}
-                        <p class="card-text">{{ article.description|truncatewords:30 }}</p> [cite: 163]
+                        <p class="card-text">{{ article.description|truncatewords:30 }}</p>
                         {% endif %}
 
-                        <div class="article-categories"> [cite: 164]
-                            {% for category in article.categories.all %} [cite: 164]
-                            <span class="badge bg-light text-dark me-1">{{ category.name }}</span> [cite: 165]
+                        <div class="article-categories">
+                            {% for category in article.categories.all %}
+                            <span class="badge bg-light text-dark me-1">{{ category.name }}</span>
                             {% endfor %}
                         </div>
                     </div>
 
-                    <div class="col-md-4 text-end"> [cite: 166]
-                        {% if user.is_authenticated %} [cite: 166]
-                        <button class="btn btn-outline-warning bookmark-btn" [cite: 167]
+                    <div class="col-md-4 text-end">
+                        {% if user.is_authenticated %}
+                        <button class="btn btn-outline-warning bookmark-btn"
                             data-article-id="{{ article.id }}"
-                            data-bookmarked="{% if article.id in bookmarked_articles %}true{% else %}false{% endif %}"> [cite: 167]
-                            <i class="fas fa-bookmark"></i> [cite: 168]
+                            data-bookmarked="{% if article.id in bookmarked_articles %}true{% else %}false{% endif %}">
+                            <i class="fas fa-bookmark"></i>
                             <span class="bookmark-text">
-                                {% if article.id in bookmarked_articles %}Bookmarked{% else %}Bookmark{% endif %} [cite: 168]
+                                {% if article.id in bookmarked_articles %}Bookmarked{% else %}Bookmark{% endif %}
                             </span>
                         </button>
                         {% endif %}
 
-                        <div class="mt-2"> [cite: 170]
-                            <a href="{{ article.url }}" target="_blank" class="btn btn-sm btn-outline-primary"> [cite: 170]
-                                <i class="fas fa-external-link-alt"></i> Read Full [cite: 170]
+                        <div class="mt-2">
+                            <a href="{{ article.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-external-link-alt"></i> Read Full
                             </a>
                         </div>
                     </div>
@@ -125,34 +125,34 @@
         </div>
         {% endfor %}
 
-        {% if page_obj.has_other_pages %} [cite: 172]
+        {% if page_obj.has_other_pages %}
         <nav aria-label="Articles pagination">
             <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %} [cite: 173]
+                {% if page_obj.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if bias_filter %}&bias={{ bias_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}"> [cite: 173]
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if bias_filter %}&bias={{ bias_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}">
                         Previous
                     </a>
                 </li>
                 {% endif %}
 
-                {% for num in page_obj.paginator.page_range %} [cite: 174]
-                {% if page_obj.number == num %} [cite: 174]
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
                 <li class="page-item active">
-                    <span class="page-link">{{ num }}</span> [cite: 175]
+                    <span class="page-link">{{ num }}</span>
                 </li>
-                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} [cite: 175]
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if bias_filter %}&bias={{ bias_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}"> [cite: 176]
+                    <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if bias_filter %}&bias={{ bias_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}">
                         {{ num }}
                     </a>
                 </li>
                 {% endif %}
                 {% endfor %}
 
-                {% if page_obj.has_next %} [cite: 177]
+                {% if page_obj.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if bias_filter %}&bias={{ bias_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}"> [cite: 177]
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if bias_filter %}&bias={{ bias_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}">
                         Next
                     </a>
                 </li>
@@ -162,12 +162,12 @@
         {% endif %}
 
         {% else %}
-        <div class="text-center py-5"> [cite: 179]
+        <div class="text-center py-5">
             <div class="mb-3">
                 <i class="fas fa-newspaper fa-3x text-muted"></i>
             </div>
-            <h4>No articles found</h4> [cite: 180]
-            <p class="text-muted">Try adjusting your filters or check back later for new content.</p> [cite: 180]
+            <h4>No articles found</h4>
+            <p class="text-muted">Try adjusting your filters or check back later for new content.</p>
         </div>
         {% endif %}
     </div>

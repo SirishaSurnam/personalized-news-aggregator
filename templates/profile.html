@@ -1,36 +1,36 @@
- {% extends 'base.html' %}
+{% extends 'base.html' %}
 {% block title %}Profile - News Aggregator{% endblock %}
 {% block content %}
 <div class="row">
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <h3><i class="fas fa-user"></i> Profile Settings</h3> [cite: 107]
+                <h3><i class="fas fa-user"></i> Profile Settings</h3>
             </div>
             <div class="card-body">
                 <form method="post">
                     {% csrf_token %}
-                    <h5>Your Interests</h5> [cite: 108]
-                    <p class="text-muted">Select categories you're interested in to personalize your news feed:</p> [cite: 108]
+                    <h5>Your Interests</h5>
+                    <p class="text-muted">Select categories you're interested in to personalize your news feed:</p>
 
                     <div class="row">
-                        {% for category in all_categories %} [cite: 109]
-                        <div class="col-md-6 mb-2"> [cite: 109]
+                        {% for category in all_categories %}
+                        <div class="col-md-6 mb-2">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox"
-                                       name="categories" value="{{ category.id }}" [cite: 110]
+                                       name="categories" value="{{ category.id }}"
                                        id="category_{{ category.id }}"
-                                       {% if category.id in selected_categories %}checked{% endif %}> [cite: 111]
-                                <label class="form-check-label" for="category_{{ category.id }}"> [cite: 111]
-                                    {{ category.name }} [cite: 112]
+                                       {% if category.id in selected_categories %}checked{% endif %}>
+                                <label class="form-check-label" for="category_{{ category.id }}">
+                                    {{ category.name }}
                                 </label>
                             </div>
                         </div>
                         {% endfor %}
-                    </div> [cite: 113]
+                    </div>
 
                     <button type="submit" class="btn btn-primary mt-3">
-                        <i class="fas fa-save"></i> Save Preferences [cite: 114]
+                        <i class="fas fa-save"></i> Save Preferences
                     </button>
                 </form>
             </div>
@@ -40,19 +40,19 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-header">
-                <h5><i class="fas fa-info-circle"></i> Account Info</h5> [cite: 115]
+                <h5><i class="fas fa-info-circle"></i> Account Info</h5>
             </div>
             <div class="card-body">
-                <p><strong>Username:</strong> {{ user.username }}</p> [cite: 115]
-                <p><strong>Email:</strong> {{ user.email|default:"Not provided" }}</p> [cite: 115]
-                <p><strong>Member since:</strong> {{ user.date_joined|date:"M d, Y" }}</p> [cite: 115]
+                <p><strong>Username:</strong> {{ user.username }}</p>
+                <p><strong>Email:</strong> {{ user.email|default:"Not provided" }}</p>
+                <p><strong>Member since:</strong> {{ user.date_joined|date:"M d, Y" }}</p>
 
                 <hr>
                 <h6>Your Stats</h6>
-                <p><strong>Bookmarked Articles:</strong> {{ user.bookmarks.count }}</p> [cite: 116]
-                <p><strong>Selected Interests:</strong> {{ user.interests.count }}</p> [cite: 116]
+                <p><strong>Bookmarked Articles:</strong> {{ user.bookmarks.count }}</p>
+                <p><strong>Selected Interests:</strong> {{ user.interests.count }}</p>
             </div>
         </div>
-    </div> [cite: 117]
+    </div>
 </div>
 {% endblock %}
