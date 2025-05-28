@@ -17,4 +17,11 @@ echo "📁 Collecting static files..."
 python manage.py collectstatic --noinput || echo "Static collection failed"
 
 echo "✅ Setup complete"
+
+echo "🛠 Installing Redis..."
+sudo apt update
+sudo apt install -y redis-server || echo "Redis installation failed"
+
+echo "🚀 Starting Redis service..."
+sudo service redis-server start || echo "Failed to start Redis"
 # Start the Django development server

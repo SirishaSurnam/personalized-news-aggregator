@@ -1,0 +1,26 @@
+ body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+.card {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.article-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transition: all 0.2s ease-in-out;
+}
+
+.bookmark-btn {
+    white-space: nowrap; /* Prevent button text from wrapping */
+}
+
+.bookmark-btn .fas {
+    margin-right: 5px;
+}

@@ -6,6 +6,7 @@ from celery.schedules import crontab
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
 # Create a Celery app instance
+
 app = Celery('news_aggregator')
 
 # Load task configuration from Django settings.

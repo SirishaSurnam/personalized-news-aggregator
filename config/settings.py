@@ -130,19 +130,19 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # Optional: Comment out Celery if Redis is not running
-"""
-CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default='redis://localhost:6379/0')
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
+
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
-"""
+# Uncomment the following lines to use Celery with Redis
 
 # API Keys
-GOOGLE_GEMINI_API_KEY = config('GOOGLE_GEMINI_API_KEY', default='')
-NEWS_API_KEY = config('NEWS_API_KEY', default='')
-GUARDIAN_API_KEY = config('GUARDIAN_API_KEY', default='')
+GOOGLE_GEMINI_API_KEY = os.getenv("GOOGLE_GEMINI_API_KEY")
+NEWS_API_KEY = os.getenv("NEWS_API_KEY")
+GUARDIAN_API_KEY = os.getenv("GUARDIAN_API_KEY")
 
 # CORS Headers settings
 CORS_ALLOW_ALL_ORIGINS = True
