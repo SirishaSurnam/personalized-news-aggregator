@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}My Dashboard - SnapRead{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar Filters -->
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5><i class="fas fa-filter"></i> AI Filters</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET">
+                    <div class="mb-3">
+                        <label class="form-label">Search</label>
+                        <input type="text" class="form-control" name="search" value="{{ search_query }}" placeholder="Search personalized news...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" name="category">
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                            <option value="{{ category.slug }}" {% if category.slug == category_filter %}selected{% endif %}>{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Bias</label>
+                        <select class="form-select" name="bias">
+                            <option value="">All</option>
+                            {% for code, label in bias_choices %}
+                            <option value="{{ code }}" {% if bias_filter == code %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Apply Filters
+                    </button>
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary w-100 mt-2">
+                        <i class="fas fa-times"></i> Clear All
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Personalized News Feed -->
+    <div class="col-md-9">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2><i class="fas fa-th-large"></i> My AI Personalized News</h2>
+            <small class="text-muted">Generated based on your interests</small>
+        </div>
+
+        {% if page_obj.object_list %}
+        {% for article in page_obj %}
+        <div class="card mb-3 article-card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5 class="card-title">
+                            <a href="{% url 'article_detail' article.id %}" class="text-decoration-none text-light">
+                                {{ article.title }}
+                            </a>
+                        </h5>
+
+                        <div class="mb-2">
+                            <span class="badge bg-{{ article.bias_color }}">
+                                {{ article.get_bias_score_display }}
+                            </span>
+                            <small class="text-muted ms-2">
+                                <i class="fas fa-calendar"></i> {{ article.published_date|date:"M d, Y" }}
+                            </small>
+                            <small class="text-muted ms-2">
+                                <i class="fas fa-newspaper"></i> {{ article.source }}
+                            </small>
+                        </div>
+
+                        {% if article.summary %}
+                        <p class="card-text">{{ article.summary }}</p>
+                        {% else %}
+                        <p class="card-text text-muted fst-italic">AI summary is being generated...</p>
+                        {% endif %}
+
+                        <div class="article-categories">
+                            {% for category in article.categories.all %}
+                            <span class="badge bg-info text-dark me-1">{{ category.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 text-end">
+                        {% if user.is_authenticated %}
+                        <button class="btn btn-outline-warning bookmark-btn mb-2"
+                                data-article-id="{{ article.id }}"
+                                data-bookmarked="{% if article.id in bookmarked_articles %}true{% else %}false{% endif %}">
+                            <i class="fas fa-bookmark"></i>
+                            <span class="bookmark-text">
+                                {% if article.id in bookmarked_articles %}Bookmarked{% else %}Bookmark{% endif %}
+                            </span>
+                        </button>
+                        {% endif %}
+
+                        <div>
+                            <a href="{{ article.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-external-link-alt"></i> Read Full
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Articles pagination">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&bias={{ bias_filter }}&category={{ category_filter }}">Previous</a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}&search={{ search_query }}&bias={{ bias_filter }}&category={{ category_filter }}">{{ num }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&bias={{ bias_filter }}&category={{ category_filter }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle"></i> No articles found. Try adjusting your filters or refresh news.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
