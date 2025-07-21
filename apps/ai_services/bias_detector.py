@@ -1,25 +1,17 @@
-# apps/ai_services/bias_detector.py (new file)
-# You can also use AutoModelForSequenceClassification and AutoTokenizer directly
-# by accessing them via the pipeline object without importing them explicitly:
-# model = bias_pipeline.model
-# tokenizer = bias_pipeline.tokenizer
-# inputs = tokenizer(text, return_tensors="pt")
-# outputs = model(**inputs)
-# You can then process outputs for bias detection.
 
-# The pipeline approach (used below) is simpler for most use cases.
 
 from transformers import pipeline
 
 
 class BiasDetector:
     def __init__(self):
-        self.model_name = "roberta-base-openai-detector"
+        self.model_name = "facebook/bart-large-mnli"  # ✅ safer and supports longer input
         self.bias_pipeline = pipeline(
-            "text-classification",
+            "zero-shot-classification",
             model=self.model_name
         )
 
     def detect_bias(self, text):
-        results = self.bias_pipeline(text)
-        return results[0]['label']
+        candidate_labels = ["LEFT", "RIGHT", "NEUTRAL"]
+        result = self.bias_pipeline(text, candidate_labels)
+        return result['labels'][0]  # highest probability

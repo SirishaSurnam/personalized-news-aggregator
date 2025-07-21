@@ -60,7 +60,6 @@
                             <a href="{% url 'article_detail' article.id %}" class="text-decoration-none">
                                 {{ article.title }}
                             </a>
-                            <p class="card-text">{{ article.summary|truncatewords:60 }}</p>
                         </h5>
                         <div class="mb-2">
                             <span class="badge bg-{{ article.bias_color }}">
@@ -73,6 +72,7 @@
                                 <i class="fas fa-newspaper"></i> {{ article.source }}
                             </small>
                         </div>
+                        <p> AI Summary:  </p>
                         <p class="card-text">
                             {{ article.summary|default:"AI summary is being generated..." }}
                         </p>

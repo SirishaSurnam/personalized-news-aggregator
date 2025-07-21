@@ -4,24 +4,20 @@ import torch
 
 
 class OptimizedSummarizer:
+    # Use smaller, faster models
+    # self.model_name = "facebook/bart-large-mnli"
+    # "google/flan-t5-small"
+    # "sshleifer/distilbart-cnn-12-6"
+    # "google/flan-t5-small"  # Faster than flan-t5-large
+
     def __init__(self):
-        # Use smaller, faster models
         self.model = "google/flan-t5-small"
-        # "sshleifer/distilbart-cnn-12-6"
-        # "google/flan-t5-small"  # Faster than flan-t5-large
-
         self.device = 0 if torch.cuda.is_available() else -1
-        self._summarizer = None
-
-    @property
-    def summarizer(self):
-        if self._summarizer is None:
-            self._summarizer = pipeline(
-                "summarization",
-                model=self.model,
-                device=self.device
-            )
-        return self._summarizer
+        self._summarizer = pipeline(
+            "summarization",
+            model=self.model,
+            device=self.device
+        )
 
     def summarize(self, text, max_length=100):
         if len(text) < 500:  # Skip summarization for short texts
