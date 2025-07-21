@@ -5,10 +5,14 @@ import logging
 from django.db import models
 from .models import Article, Category
 
+from apps.ai_services import CachedSummarizer, BiasDetector
+from apps.news.models import Article
+
 from apps.ai_services.gemini_client import GeminiService
 from apps.ai_services.news_fetcher import NewsFetcher
 
 logger = logging.getLogger(__name__)
+
 
 @shared_task
 def fetch_latest_news():
@@ -35,31 +39,28 @@ def fetch_latest_news():
 
 @shared_task
 def process_article_ai(article_id):
-    """Process article with AI for summary and bias detection."""
     try:
         article = Article.objects.get(id=article_id)
-        gemini = GeminiService()
 
-        # Generate summary if not exists
-        if not article.summary:
-            summary = gemini.summarize_article(article.content or article.description)
-            article.summary = summary
+        content = article.content or article.description or ""
+        if not content:
+            print(f"[⚠️] Empty content for article {article_id}")
+            return
 
-        # Detect bias if unknown
-        if article.bias_score == 'UNKNOWN':
-            bias = gemini.detect_bias(article.content or article.description)
-            article.bias_score = bias
+        summarizer = CachedSummarizer()
+        summary = summarizer.summarize(content)
 
+        detector = BiasDetector()
+        bias_score = detector.detect_bias(content)
+
+        article.summary = summary
+        article.bias_score = bias_score
         article.save()
-        logger.info(f"Processed article {article_id} with AI")
-        return f"Processed article: {article.title[:50]}"
 
-    except Article.DoesNotExist:
-        logger.error(f"Article {article_id} not found")
-        return f"Article {article_id} not found"
+        print(f"[✔] Saved summary for article {article.id}")
     except Exception as e:
-        logger.error(f"Error processing article {article_id}: {str(e)}")
-        return f"Error: {str(e)}"
+        print(f"[✘] Error processing article {article_id}: {e}")
+
 
 @shared_task
 def cleanup_old_articles():
@@ -76,6 +77,7 @@ def cleanup_old_articles():
     except Exception as e:
         logger.error(f"Error in cleanup_old_articles: {str(e)}")
         return f"Error: {str(e)}"
+
 
 @shared_task
 def process_pending_articles():

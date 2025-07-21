@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User  # Django's built-in User model
 from django.utils.text import slugify
+from apps.ai_services import CachedSummarizer, BiasDetector
 
 
 class Category(models.Model):
@@ -82,19 +83,18 @@ class Article(models.Model):
             'unknown': 'Unknown'
         }
         return bias_labels.get(self.bias_score, 'Unknown')
-    # apps/news/models.py (add to Article model)
 
     def save(self, *args, **kwargs):
-        # Generate AI content if not present
         if not self.summary:
-            self._generate_ai_content()
+            from apps.ai_services import CachedSummarizer
+            summarizer = CachedSummarizer()
+            self.summary = summarizer.summarize(
+                self.content or self.description)
         super().save(*args, **kwargs)
 
     def _generate_ai_content(self):
         try:
-            from apps.ai_services import OptimizedSummarizer, BiasDetector
-
-            summarizer = OptimizedSummarizer()
+            summarizer = CachedSummarizer()
             self.summary = summarizer.summarize(self.content)
 
             bias_detector = BiasDetector()
@@ -102,9 +102,8 @@ class Article(models.Model):
 
         except Exception as e:
             print(f"AI processing failed for article {self.id}: {e}")
-            # Set default values
             self.summary = self.description[:200] + "..."
-            self.bias_score = 'unknown'
+            self.bias_score = 'UNKNOWN'
 
 
 class UserInterest(models.Model):

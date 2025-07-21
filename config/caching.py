@@ -1,4 +1,5 @@
 # config/caching.py
+from apps.ai_services.summarizer import OptimizedSummarizer
 from django.core.cache import cache
 CACHES = {
     'default': {

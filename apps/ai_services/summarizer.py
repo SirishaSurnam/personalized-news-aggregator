@@ -6,7 +6,10 @@ import torch
 class OptimizedSummarizer:
     def __init__(self):
         # Use smaller, faster models
-        self.model = "google/flan-t5-small"  # Faster than flan-t5-large
+        self.model = "google/flan-t5-small"
+        # "sshleifer/distilbart-cnn-12-6"
+        # "google/flan-t5-small"  # Faster than flan-t5-large
+
         self.device = 0 if torch.cuda.is_available() else -1
         self._summarizer = None
 

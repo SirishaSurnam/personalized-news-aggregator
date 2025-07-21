@@ -11,6 +11,7 @@ User = get_user_model()
 @receiver(post_save, sender=Article)
 def process_article_on_save(sender, instance, created, **kwargs):
     if created:
+        from apps.news.tasks import process_article_ai
         process_article_ai.delay(instance.id)
 
 
