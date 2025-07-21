@@ -20,6 +20,13 @@ app.autodiscover_tasks()
 
 # Optional: A simple debug task
 
+app.conf.beat_schedule = {
+    'process-articles-every-hour': {
+        'task': 'apps.news.tasks.process_pending_articles',
+        'schedule': crontab(minute=0, hour='*/1'),  # every 60 minutes
+    },
+}
+
 
 @app.task(bind=True)
 def debug_task(self):

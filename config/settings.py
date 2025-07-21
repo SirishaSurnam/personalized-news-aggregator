@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'apps.dashboard',
     'apps.ai_services',
     'django_celery_results',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
