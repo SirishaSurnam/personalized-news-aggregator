@@ -130,7 +130,9 @@ def profile(request):
     context = {
         'user_interests': user_interests,
         'all_categories': all_categories,
-        'selected_categories': list(user_interests.values_list('category_id', flat=True)),
+        'selected_categories': list(
+            user_interests.values_list('category_id', flat=True)
+        ),
     }
     return render(request, 'profile.html', context)
 
@@ -170,7 +172,10 @@ class ArticleListAPI(generics.ListAPIView):
 def refresh_articles(request):
     from .tasks import fetch_latest_news
     fetch_latest_news.delay()
-    return Response({'message': 'News refresh started'}, status=status.HTTP_202_ACCEPTED)
+    return Response(
+        {'message': 'News refresh started'},
+        status=status.HTTP_202_ACCEPTED
+    )
 
 
 # apps/news/views.py

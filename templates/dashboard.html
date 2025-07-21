@@ -1,7 +1,7 @@
+<!-- dashboard.html -->
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}My Dashboard - SnapRead{% endblock %}
-
 {% block content %}
 <div class="row">
     <!-- Sidebar Filters -->
@@ -44,14 +44,12 @@
             </div>
         </div>
     </div>
-
     <!-- Personalized News Feed -->
     <div class="col-md-9">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2><i class="fas fa-th-large"></i> My AI Personalized News</h2>
             <small class="text-muted">Generated based on your interests</small>
         </div>
-
         {% if page_obj.object_list %}
         {% for article in page_obj %}
         <div class="card mb-3 article-card">
@@ -59,11 +57,10 @@
                 <div class="row">
                     <div class="col-md-8">
                         <h5 class="card-title">
-                            <a href="{% url 'article_detail' article.id %}" class="text-decoration-none text-light">
+                            <a href="{% url 'article_detail' article.id %}" class="text-decoration-none">
                                 {{ article.title }}
                             </a>
                         </h5>
-
                         <div class="mb-2">
                             <span class="badge bg-{{ article.bias_color }}">
                                 {{ article.get_bias_score_display }}
@@ -75,20 +72,17 @@
                                 <i class="fas fa-newspaper"></i> {{ article.source }}
                             </small>
                         </div>
-
                         {% if article.summary %}
                         <p class="card-text">{{ article.summary }}</p>
                         {% else %}
                         <p class="card-text text-muted fst-italic">AI summary is being generated...</p>
                         {% endif %}
-
                         <div class="article-categories">
                             {% for category in article.categories.all %}
                             <span class="badge bg-info text-dark me-1">{{ category.name }}</span>
                             {% endfor %}
                         </div>
                     </div>
-
                     <div class="col-md-4 text-end">
                         {% if user.is_authenticated %}
                         <button class="btn btn-outline-warning bookmark-btn mb-2"
@@ -100,7 +94,6 @@
                             </span>
                         </button>
                         {% endif %}
-
                         <div>
                             <a href="{{ article.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
                                 <i class="fas fa-external-link-alt"></i> Read Full
@@ -111,35 +104,13 @@
             </div>
         </div>
         {% endfor %}
-
         {% if page_obj.has_other_pages %}
         <nav aria-label="Articles pagination">
             <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&bias={{ bias_filter }}&category={{ category_filter }}">Previous</a>
-                </li>
-                {% endif %}
-
-                {% for num in page_obj.paginator.page_range %}
-                {% if page_obj.number == num %}
-                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-                {% else %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ num }}&search={{ search_query }}&bias={{ bias_filter }}&category={{ category_filter }}">{{ num }}</a>
-                </li>
-                {% endif %}
-                {% endfor %}
-
-                {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&bias={{ bias_filter }}&category={{ category_filter }}">Next</a>
-                </li>
-                {% endif %}
+                <!-- Pagination code -->
             </ul>
         </nav>
         {% endif %}
-
         {% else %}
         <div class="alert alert-info text-center">
             <i class="fas fa-info-circle"></i> No articles found. Try adjusting your filters or refresh news.
