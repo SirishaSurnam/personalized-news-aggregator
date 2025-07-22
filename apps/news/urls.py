@@ -12,5 +12,7 @@ urlpatterns = [
     path('articles/', views.ArticleListAPI.as_view(), name='api_articles'),
     path('refresh-news/', views.refresh_articles, name='refresh_articles'),
     path('dashboard/', views.dashboard, name='dashboard'),
+    path('fetch_summaries/', views.fetch_missing_summaries,
+         name='fetch_missing_summaries'),
 
 ]

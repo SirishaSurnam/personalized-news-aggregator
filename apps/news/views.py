@@ -12,6 +12,10 @@ from .models import Article, Category, Bookmark, UserInterest
 from .serializers import ArticleSerializer
 from .tasks import process_article_ai
 
+from django.views.decorators.csrf import csrf_exempt
+from apps.news.models import Article
+from apps.news.tasks import process_article_ai
+
 
 def home(request):
     articles = Article.objects.all()
@@ -213,3 +217,22 @@ def dashboard(request):
         'category_filter': category_filter,
     }
     return render(request, 'dashboard.html', context)
+
+
+@csrf_exempt
+def fetch_missing_summaries(request):
+    if request.method == 'POST':
+        article_ids = request.POST.getlist('article_ids[]')
+
+        triggered = []
+        for article_id in article_ids:
+            try:
+                article = Article.objects.get(id=article_id)
+                if not article.summary:
+                    process_article_ai.delay(article.id)
+                    triggered.append(article.id)
+            except Article.DoesNotExist:
+                continue
+
+        return JsonResponse({'status': 'success', 'triggered': triggered})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)

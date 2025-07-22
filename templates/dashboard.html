@@ -71,9 +71,13 @@
                             <small class="text-muted ms-2">
                                 <i class="fas fa-newspaper"></i> {{ article.source }}
                             </small>
+                            <button onclick="triggerSummaryFetch()" class="btn btn-outline-success mb-3">
+                                <i class="fas fa-magic"></i> Fetch AI Summaries
+                            </button>
+
                         </div>
                         <p> AI Summary:  </p>
-                        <p class="card-text">
+                        <p class="card-text" data-summary-present="{% if article.summary %}true{% else %}false{% endif %}">
                             {% if article.summary %}
                                 {{ article.summary }}
                             {% else %}
@@ -148,4 +152,43 @@
         {% endif %}
     </div>
 </div>
+<script>
+function triggerSummaryFetch() {
+    const articles = document.querySelectorAll('.article-card');
+    const missing = [];
+
+    articles.forEach(card => {
+        const summary = card.querySelector('.card-text')?.innerText.trim();
+        const articleId = card.querySelector('.bookmark-btn')?.getAttribute('data-article-id');
+        const summaryPresent = card.querySelector('.card-text')?.dataset.summaryPresent;
+
+        if (summaryPresent === 'false' && articleId) {
+            missing.push(articleId);
+        }
+    });
+
+    if (missing.length > 0) {
+        const formData = new URLSearchParams();
+        missing.forEach(id => formData.append('article_ids[]', id));  // ✅ send as multiple values
+
+        fetch("{% url 'fetch_missing_summaries' %}", {
+            method: "POST",
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                console.log('Triggered summarization for:', data.triggered);
+                alert('AI summaries are being generated!');
+            }
+        });
+    }
+}
+    // Auto trigger on load
+    document.addEventListener('DOMContentLoaded', triggerSummaryFetch);
+</script>
 {% endblock %}

@@ -1,2 +1,4 @@
 # .gitignore
 .env
+Instructions.txt
+/workspaces/personalized-news-aggregator/Instructions.txt

@@ -1,0 +1,14 @@
+{
+  "python.analysis.exclude": [
+    "**/.venv",
+    "**/__pycache__",
+    "**/.mypy_cache",
+    "**/site-packages/transformers",
+    "**/site-packages/torch"
+  ],
+  "python.analysis.autoImportCompletions": false,
+  "python.analysis.memory.keepLibraryAst": false,
+  "python.analysis.indexing": false,
+  "python.languageServer": "Pylance",
+  "python.analysis.typeCheckingMode": "off"
+}
