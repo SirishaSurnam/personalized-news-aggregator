@@ -71,9 +71,12 @@
                             <small class="text-muted ms-2">
                                 <i class="fas fa-newspaper"></i> {{ article.source }}
                             </small>
-                            <button onclick="triggerSummaryFetch()" class="btn btn-outline-success mb-3">
-                                <i class="fas fa-magic"></i> Fetch AI Summaries
-                            </button>
+                                {% if not article.summary %}
+                                <form method="post" class="summary-form" data-article-id="{{ article.id }}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-sm btn-outline-info mt-2">Summarize 🧠</button>
+                                </form>
+                                {% endif %}
 
                         </div>
                         <p> AI Summary:  </p>
@@ -158,32 +161,31 @@ function triggerSummaryFetch() {
     const missing = [];
 
     articles.forEach(card => {
-        const summary = card.querySelector('.card-text')?.innerText.trim();
-        const articleId = card.querySelector('.bookmark-btn')?.getAttribute('data-article-id');
         const summaryPresent = card.querySelector('.card-text')?.dataset.summaryPresent;
-
+        const articleId = card.querySelector('.bookmark-btn')?.getAttribute('data-article-id');
         if (summaryPresent === 'false' && articleId) {
             missing.push(articleId);
         }
     });
 
-    if (missing.length > 0) {
-        const formData = new URLSearchParams();
-        missing.forEach(id => formData.append('article_ids[]', id));  // ✅ send as multiple values
+    const batch = missing.slice(0, 5);  // Safe batch size
 
-        fetch("{% url 'fetch_missing_summaries' %}", {
+    if (batch.length > 0) {
+        const formData = new URLSearchParams();
+        batch.forEach(id => formData.append('article_ids[]', id));
+
+        fetch("/fetch_summaries/", {
             method: "POST",
             headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
+                'X-CSRFToken': getCookie('csrftoken'),
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: formData,
         })
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
             if (data.status === 'success') {
-                console.log('Triggered summarization for:', data.triggered);
-                alert('AI summaries are being generated!');
+                console.log('[Auto-fetch] Triggered:', data.triggered);
             }
         });
     }
