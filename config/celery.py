@@ -14,6 +14,31 @@ app = Celery('news_aggregator')
 #   should have a `CELERY_` prefix in settings.py.
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
+
+# Add these optimizations
+app.conf.update(
+    task_serializer='json',
+    accept_content=['json'],
+    result_serializer='json',
+    broker_url='redis://localhost:6379/0',
+    result_backend='redis://localhost:6379/0',
+    task_acks_late=True,
+    task_reject_on_worker_lost=True,
+    worker_prefetch_multiplier=1,
+    task_soft_time_limit=300,
+    task_time_limit=600,
+    task_track_started=True,
+    worker_max_memory_per_child=500 * 1024 * 1024,  # 500MB
+)
+
+app.conf.task_routes = {
+    'apps.news.tasks.process_article_ai': {'queue': 'high'},
+    'apps.news.tasks.fetch_latest_news': {'queue': 'medium'},
+    'apps.news.tasks.cleanup_old_articles': {'queue': 'low'},
+    'apps.news.tasks.process_pending_articles': {'queue': 'medium'},
+}
+
+
 # Auto-discover tasks in all registered Django app configs.
 # For example, tasks can be placed in apps/news/tasks.py.
 app.autodiscover_tasks()
@@ -26,11 +51,6 @@ app.conf.beat_schedule = {
         'schedule': crontab(minute=0, hour='*/1'),  # every 60 minutes
     },
 }
-
-
-@app.task(bind=True)
-def debug_task(self):
-    print(f'Request: {self.request!r}')
 
 
 # Define periodic tasks for Celery Beat
@@ -53,7 +73,7 @@ app.conf.beat_schedule = {
 }
 # config/celery.py (add these tasks)
 
-
+'''
 @app.task
 def process_article_ai(article_id):
     from apps.news.models import Article
@@ -126,3 +146,8 @@ def process_article_ai(self, article_id):
     except Exception as e:
         print(f"Error processing article {article_id}: {e}")
         raise self.retry(exc=e, countdown=60 ** self.request.retries)
+
+@app.task(bind=True)
+def debug_task(self):
+    print(f'Request: {self.request!r}')
+'''

@@ -13,8 +13,6 @@ from .serializers import ArticleSerializer
 from .tasks import process_article_ai
 
 from django.views.decorators.csrf import csrf_exempt
-from apps.news.models import Article
-from apps.news.tasks import process_article_ai
 
 
 def home(request):
@@ -223,16 +221,35 @@ def dashboard(request):
 def fetch_missing_summaries(request):
     if request.method == 'POST':
         article_ids = request.POST.getlist('article_ids[]')
-
         triggered = []
-        for article_id in article_ids:
+
+        for article_id in article_ids[:5]:
             try:
                 article = Article.objects.get(id=article_id)
                 if not article.summary:
-                    process_article_ai.delay(article.id)
+                    # 🟧 Assign to medium queue
+                    process_article_ai.apply_async(
+                        args=[article.id], queue='medium')
                     triggered.append(article.id)
             except Article.DoesNotExist:
                 continue
 
         return JsonResponse({'status': 'success', 'triggered': triggered})
-    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+    return JsonResponse({'status': 'error'}, status=400)
+
+
+@csrf_exempt
+def fetch_summary_for_article(request):
+    if request.method == 'POST':
+        article_id = request.POST.get('article_id')
+        try:
+            article = Article.objects.get(id=article_id)
+            if not article.summary:
+                # 🟥 Assign to high priority queue here
+                process_article_ai.apply_async(args=[article.id], queue='high')
+                return JsonResponse({'status': 'triggered'})
+        except Article.DoesNotExist:
+            pass
+
+    return JsonResponse({'status': 'error'}, status=400)
