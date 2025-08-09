@@ -51,103 +51,116 @@
             <small class="text-muted">Generated based on your interests</small>
         </div>
         {% if page_obj.object_list %}
-        {% for article in page_obj %}
-        <div class="card mb-3 article-card">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-8">
-                        <h5 class="card-title">
-                            <a href="{% url 'article_detail' article.id %}" class="text-decoration-none">
-                                {{ article.title }}
-                            </a>
-                        </h5>
-                        <div class="mb-2">
-                            <span class="badge bg-{{ article.bias_color }}">
-                                {{ article.get_bias_score_display }}
-                            </span>
-                            <small class="text-muted ms-2">
-                                <i class="fas fa-calendar"></i> {{ article.published_date|date:"M d, Y" }}
-                            </small>
-                            <small class="text-muted ms-2">
-                                <i class="fas fa-newspaper"></i> {{ article.source }}
-                            </small>
+        
+        <!-- Grid Container for Articles -->
+        <div class="row g-3 articles-grid">
+            {% for article in page_obj %}
+            <div class="col-lg-6 col-xl-4">
+                <div class="card h-100 article-card shadow-sm">
+                    <div class="card-body d-flex flex-column">
+                        <!-- Article Header -->
+                        <div class="mb-3">
+                            <h6 class="card-title mb-2">
+                                <a href="{% url 'article_detail' article.id %}" class="text-decoration-none text-dark fw-bold">
+                                    {{ article.title }}
+                                </a>
+                            </h6>
+                            
+                            <!-- Badges and Meta Info -->
+                            <div class="mb-2">
+                                <span class="badge bg-{{ article.bias_color }} me-1">
+                                    {{ article.get_bias_score_display }}
+                                </span>
+                                <div class="text-muted small mt-1">
+                                    <div><i class="fas fa-calendar me-1"></i> {{ article.published_date|date:"M d, Y" }}</div>
+                                    <div><i class="fas fa-newspaper me-1"></i> {{ article.source }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- AI Summary Section -->
+                        <div class="mb-3 flex-grow-1">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <small class="text-primary fw-semibold">🧠 AI Summary:</small>
                                 {% if not article.summary %}
                                 <form method="post" class="summary-form" data-article-id="{{ article.id }}">
                                     {% csrf_token %}
-                                    <button class="btn btn-sm btn-outline-info mt-2">Summarize 🧠</button>
+                                    <button class="btn btn-sm btn-outline-info py-1 px-2">Generate</button>
                                 </form>
                                 {% endif %}
-
+                            </div>
+                            
+                            <p class="card-text small" data-summary-present="{% if article.summary %}true{% else %}false{% endif %}">
+                                {% if article.summary %}
+                                    {{ article.summary|truncatewords:25 }}
+                                {% else %}
+                                    <span class="text-muted fst-italic">⏳ AI summary is being generated... Please check back soon.</span>
+                                {% endif %}
+                            </p>
                         </div>
-                        <p> AI Summary:  </p>
-                        <p class="card-text" data-summary-present="{% if article.summary %}true{% else %}false{% endif %}">
-                            {% if article.summary %}
-                                {{ article.summary }}
-                            {% else %}
-                                <span class="text-muted fst-italic">⏳ AI summary is being generated... Please check back soon.</span>
-                            {% endif %}
-                        </p>
-                        <div class="article-categories">
+                        
+                        <!-- Categories -->
+                        <div class="article-categories mb-3">
                             {% for category in article.categories.all %}
-                            <span class="badge bg-info text-dark me-1">{{ category.name }}</span>
+                            <span class="badge bg-info text-dark me-1 mb-1">{{ category.name }}</span>
                             {% endfor %}
                         </div>
-                    </div>
-                    <div class="col-md-4 text-end">
-                        {% if user.is_authenticated %}
-                        <button class="btn btn-outline-warning bookmark-btn mb-2"
-                                data-article-id="{{ article.id }}"
-                                data-bookmarked="{% if article.id in bookmarked_articles %}true{% else %}false{% endif %}">
-                            <i class="fas fa-bookmark"></i>
-                            <span class="bookmark-text">
-                                {% if article.id in bookmarked_articles %}Bookmarked{% else %}Bookmark{% endif %}
-                            </span>
-                        </button>
-                        {% endif %}
-                        <div>
-                            <a href="{{ article.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-external-link-alt"></i> Read Full
-                            </a>
+                        
+                        <!-- Action Buttons -->
+                        <div class="mt-auto">
+                            <div class="d-flex justify-content-between align-items-center">
+                                {% if user.is_authenticated %}
+                                <button class="btn btn-sm btn-outline-warning bookmark-btn"
+                                        data-article-id="{{ article.id }}"
+                                        data-bookmarked="{% if article.id in bookmarked_articles %}true{% else %}false{% endif %}">
+                                    <i class="fas fa-bookmark"></i>
+                                    <span class="bookmark-text d-none d-md-inline">
+                                        {% if article.id in bookmarked_articles %}Saved{% else %}Save{% endif %}
+                                    </span>
+                                </button>
+                                {% endif %}
+                                
+                                <a href="{{ article.url }}" target="_blank" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    <span class="d-none d-md-inline">Read Full</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
+        
+        <!-- Pagination -->
         {% if page_obj.has_other_pages %}
-<nav aria-label="Articles pagination">
-    <ul class="pagination justify-content-center">
-        {% if page_obj.has_previous %}
-        <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&category={{ category_filter }}&bias={{ bias_filter }}" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-            </a>
-        </li>
-        {% endif %}
-
-        {% for num in page_obj.paginator.page_range %}
-        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-            <a class="page-link" href="?page={{ num }}&search={{ search_query }}&category={{ category_filter }}&bias={{ bias_filter }}">{{ num }}</a>
-        </li>
-        {% endfor %}
-
-        {% if page_obj.has_next %}
-        <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&category={{ category_filter }}&bias={{ bias_filter }}" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-            </a>
-        </li>
-        {% endif %}
-    </ul>
-</nav>
-{% endif %}
-        {% if page_obj.has_other_pages %}
-        <nav aria-label="Articles pagination">
+        <nav aria-label="Articles pagination" class="mt-4">
             <ul class="pagination justify-content-center">
-                <!-- Pagination code -->
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&category={{ category_filter }}&bias={{ bias_filter }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}&search={{ search_query }}&category={{ category_filter }}&bias={{ bias_filter }}">{{ num }}</a>
+                </li>
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&category={{ category_filter }}&bias={{ bias_filter }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% endif %}
             </ul>
         </nav>
         {% endif %}
+        
         {% else %}
         <div class="alert alert-info text-center">
             <i class="fas fa-info-circle"></i> No articles found. Try adjusting your filters or refresh news.
@@ -155,6 +168,54 @@
         {% endif %}
     </div>
 </div>
+
+<style>
+.articles-grid .article-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.articles-grid .article-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.article-card {
+    min-height: 300px;
+}
+
+.card-title a:hover {
+    color: #007bff !important;
+}
+
+@media (max-width: 768px) {
+    .articles-grid .col-lg-6 {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Custom responsive breakpoints for better grid layout */
+@media (min-width: 1400px) {
+    .articles-grid .col-xl-4 {
+        flex: 0 0 auto;
+        width: 33.333333%;
+    }
+}
+
+@media (max-width: 1199px) {
+    .articles-grid .col-lg-6 {
+        flex: 0 0 auto;
+        width: 50%;
+    }
+}
+
+@media (max-width: 991px) {
+    .articles-grid .col-lg-6 {
+        flex: 0 0 auto;
+        width: 100%;
+    }
+}
+</style>
+
 <script>
 function triggerSummaryFetch() {
     const articles = document.querySelectorAll('.article-card');
@@ -190,7 +251,24 @@ function triggerSummaryFetch() {
         });
     }
 }
-    // Auto trigger on load
-    document.addEventListener('DOMContentLoaded', triggerSummaryFetch);
+
+// Auto trigger on load
+document.addEventListener('DOMContentLoaded', triggerSummaryFetch);
+
+// Get CSRF token function
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 </script>
 {% endblock %}

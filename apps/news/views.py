@@ -12,7 +12,15 @@ from .models import Article, Category, Bookmark, UserInterest
 from .serializers import ArticleSerializer
 from .tasks import process_article_ai
 
+
 from django.views.decorators.csrf import csrf_exempt
+
+
+def refresh_and_redirect(request):
+    from .tasks import fetch_latest_news
+    fetch_latest_news.delay()
+    messages.success(request, "📰 News refresh started! Please wait a few seconds.")
+    return redirect('home')  # or 'dashboard' if you want
 
 
 def home(request):

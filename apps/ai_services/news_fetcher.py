@@ -83,7 +83,7 @@ class NewsFetcher:
             params = {
                 'api-key': self.guardian_key,
                 # headline,standfirst,body,byline,thumbnail,publication
-                'show-fields': 'trailText,body,byline',
+                'show-fields': 'trailText,body,byline,thumbnail',
                 'page-size': 20,  # Max 50 per page
                 'order-by': 'newest'
             }
@@ -182,6 +182,8 @@ class NewsFetcher:
                 author=item.get('author', '')[:200],  # Limit author length
                 source=item.get('source', {}).get('name', 'NewsAPI')[
                     :200],  # Limit source name length
+                image_url=item.get('urlToImage', '')[
+                    :1000],  # Limit image URL length
                 published_date=published_date
             )
             logger.info(f"Created article (NewsAPI): {article.title}")
@@ -228,6 +230,7 @@ class NewsFetcher:
             # Guardian content can be HTML
             content_html = fields.get('body', '')
             author = fields.get('byline', '')
+            image_url = fields.get('thumbnail', '')
 
             # Clean HTML from content using BeautifulSoup
             content_text = ''
@@ -243,7 +246,8 @@ class NewsFetcher:
                 content=content_text[:5000],
                 author=author[:200],
                 source='The Guardian',  # Static source for Guardian API
-                published_date=published_date
+                published_date=published_date,
+                image_url=image_url[:1000],
             )
             logger.info(f"Created article (Guardian): {article.title}")
             # Pass sectionName for better categorization if available
@@ -302,6 +306,17 @@ class NewsFetcher:
                 soup = BeautifulSoup(description_html, 'html.parser')
                 description_text = soup.get_text(separator='\n', strip=True)
 
+            image_url = ''
+            if hasattr(entry, 'media_content'):
+                media = entry.media_content[0]
+                if 'url' in media:
+                    image_url = media['url']
+            else:
+                img_tag = BeautifulSoup(
+                    description_html, 'html.parser').find('img')
+                if img_tag and img_tag.get('src'):
+                    image_url = img_tag['src']
+
             # RSS feeds usually provide summaries, not full content.
             # Full content might require scraping the article URL, which is a more complex task.
             content = ''  # Placeholder for full content if you decide to scrape later
@@ -323,7 +338,8 @@ class NewsFetcher:
                 content=content[:5000] if content else '',
                 author=getattr(entry, 'author', '')[:200],
                 source=source_name[:200],
-                published_date=published_date
+                published_date=published_date,
+                image_url=image_url[:1000]
             )
             logger.info(
                 f"Created article (RSS: {source_name}): {article.title}")
