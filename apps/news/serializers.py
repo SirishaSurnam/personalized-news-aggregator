@@ -15,5 +15,5 @@ class ArticleSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'url', 'description', 'content', 'author',
             'source', 'published_date', 'summary', 'bias_score',
-            'bias_color', 'categories'
+            'bias_color', 'categories' , 'image_url', 
         ]

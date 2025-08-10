@@ -52,6 +52,14 @@
         </div>
         {% if page_obj.object_list %}
         
+
+        <div class="mb-3">
+            <button id="refresh-news" class="btn btn-success">
+                <i class="fas fa-sync-alt"></i> Refresh News
+            </button>
+        </div>
+
+
         <!-- Grid Container for Articles -->
         <div class="row g-3 articles-grid">
             {% for article in page_obj %}
@@ -270,5 +278,78 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+</script>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const btn = document.getElementById('refresh-news');
+    if (!btn) {
+        console.error("❌ Refresh button not found!");
+        return;
+    }
+    btn.addEventListener('click', function() {
+        console.log("✅ Refresh button clicked!");
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+
+        fetch("{% url 'refresh_news' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken"),
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            console.log("Server response:", data);
+            if (data.status === "success") {
+                btn.innerHTML = '<i class="fas fa-check"></i> Refreshed!';
+                setTimeout(() => location.reload(), 5000);
+            } else {
+                btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Failed';
+            }
+        })
+        .catch(err => {
+            console.error("Error refreshing news:", err);
+            btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+        });
+    });
+});
+
+// Helper to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+btn.addEventListener('click', function() {
+    console.log("✅ Refresh button clicked!");
+    fetch("{% url 'refresh_news' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCookie("csrftoken"),
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log("Server responded:", data);
+    })
+    .catch(err => {
+        console.error("Fetch error:", err);
+    });
+});
+
 </script>
 {% endblock %}

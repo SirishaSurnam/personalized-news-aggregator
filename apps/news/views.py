@@ -15,12 +15,10 @@ from .tasks import process_article_ai
 
 from django.views.decorators.csrf import csrf_exempt
 
+from .tasks import fetch_latest_news
 
-def refresh_and_redirect(request):
-    from .tasks import fetch_latest_news
-    fetch_latest_news.delay()
-    messages.success(request, "📰 News refresh started! Please wait a few seconds.")
-    return redirect('home')  # or 'dashboard' if you want
+
+
 
 
 def home(request):
@@ -178,14 +176,7 @@ class ArticleListAPI(generics.ListAPIView):
         return queryset
 
 
-@api_view(['POST'])
-def refresh_articles(request):
-    from .tasks import fetch_latest_news
-    fetch_latest_news.delay()
-    return Response(
-        {'message': 'News refresh started'},
-        status=status.HTTP_202_ACCEPTED
-    )
+
 
 
 # apps/news/views.py
@@ -211,7 +202,7 @@ def dashboard(request):
     if category_filter:
         articles = articles.filter(categories__slug=category_filter)
 
-    paginator = Paginator(articles, 10)
+    paginator = Paginator(articles, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -261,3 +252,108 @@ def fetch_summary_for_article(request):
             pass
 
     return JsonResponse({'status': 'error'}, status=400)
+
+@csrf_exempt
+@require_POST
+def refresh_and_redirect(request):
+    try:
+        fetch_latest_news.delay()  # run celery task
+        return JsonResponse({"status": "success", "message": "News refresh triggered."})
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+'''
+# Updated refresh function for web interface
+@csrf_exempt
+@require_POST
+def refresh_and_redirect_web(request):
+    """Web interface refresh - returns JSON response for AJAX"""
+    try:
+        from .tasks import fetch_latest_news
+        fetch_latest_news.delay()
+        return JsonResponse({
+            'status': 'success',
+            'message': '📰 News refresh started! Please wait a few seconds.'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Failed to start news refresh. Please try again.'
+        }, status=500)
+
+# Keep your existing API function for API endpoints
+@api_view(['POST'])
+def refresh_articles(request):
+    """API endpoint for refresh"""
+    try:
+        from .tasks import fetch_latest_news
+        fetch_latest_news.delay()
+        return Response(
+            {'message': 'News refresh started'},
+            status=status.HTTP_202_ACCEPTED
+        )
+    except Exception as e:
+        return Response(
+            {'message': 'Failed to start news refresh'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@csrf_exempt  # Optional if you handle CSRF via JS
+@require_POST
+def refresh_and_redirect(request):
+    try:
+        # Trigger Celery task
+        fetch_latest_news.apply_async(queue='default')
+
+        return JsonResponse({
+            "status": "success",
+            "message": "News refresh triggered."
+        })
+    except Exception as e:
+        return JsonResponse({
+            "status": "error",
+            "message": str(e)
+        }, status=500)
+
+# Alternative: You can also modify your existing refresh_and_redirect function
+def refresh_and_redirect(request):
+    """Original redirect-based refresh function"""
+    try:
+        from .tasks import fetch_latest_news
+        fetch_latest_news.delay()
+        messages.success(request, "📰 News refresh started! Please wait a few seconds.")
+        
+        # If it's an AJAX request, return JSON
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'status': 'success',
+                'message': '📰 News refresh started! Please wait a few seconds.'
+            })
+        
+        return redirect('home')  # Regular redirect for non-AJAX requests
+    except Exception as e:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Failed to start news refresh'
+            }, status=500)
+        
+        messages.error(request, "Failed to refresh news. Please try again.")
+        return redirect('home')
+'''
+
+@api_view(['POST'])
+def refresh_articles(request):
+    from .tasks import fetch_latest_news
+    fetch_latest_news.delay()
+    return Response(
+        {'message': 'News refresh started'},
+        status=status.HTTP_202_ACCEPTED
+    )
+'''
+    def refresh_and_redirect(request):
+    from .tasks import fetch_latest_news
+    fetch_latest_news.delay()
+    messages.success(request, "📰 News refresh started! Please wait a few seconds.")
+    return redirect('home')  # or 'dashboard' if you want
+'''

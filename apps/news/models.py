@@ -31,6 +31,7 @@ class Article(models.Model):
         ('UNKNOWN', 'Unknown'),
     ]
     title = models.CharField(max_length=500, db_index=True)
+    image_url = models.URLField(blank=True, null=True)
     url = models.URLField(unique=True)
     description = models.TextField(blank=True)
     summary = models.TextField(blank=True, null=True)  # AI-generated summary
@@ -40,7 +41,7 @@ class Article(models.Model):
     published_date = models.DateTimeField(db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    image_url = models.URLField(blank=True, null=True)  # image URL
+    # image_url = models.URLField(blank=True, null=True)  # image URL
 
     # AI-generated fields
     summary = models.TextField(blank=True)

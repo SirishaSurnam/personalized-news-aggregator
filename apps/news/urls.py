@@ -10,11 +10,22 @@ urlpatterns = [
     path('toggle-bookmark/', views.toggle_bookmark, name='toggle_bookmark'),
 
     # API endpoints
-    path('articles/', views.ArticleListAPI.as_view(), name='api_articles'),
-    path('refresh-news/', views.refresh_articles, name='refresh_articles'),
+    # path('articles/', views.ArticleListAPI.as_view(), name='api_articles'),
+    # path('refresh-news/', views.refresh_articles, name='refresh_articles'),
     # path("refresh-news/", views.refresh_and_redirect, name="refresh_news"),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('fetch_summaries/', views.fetch_missing_summaries,
          name='fetch_missing_summaries'),
+
+    path('refresh-news/', views.refresh_and_redirect, name='refresh_news'),
+
+
+     # Refresh endpoints
+    # path('refresh-news/', views.refresh_and_redirect, name='refresh_news'), 
+    # For AJAX calls ^
+    
+    # API endpoints
+    path('api/articles/', views.ArticleListAPI.as_view(), name='api_articles'),
+    path('api/refresh-articles/', views.refresh_articles, name='api_refresh_articles'),
 
 ]
