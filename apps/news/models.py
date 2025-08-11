@@ -31,7 +31,7 @@ class Article(models.Model):
         ('UNKNOWN', 'Unknown'),
     ]
     title = models.CharField(max_length=500, db_index=True)
-    image_url = models.URLField(blank=True, null=True)
+    image_url = models.URLField(max_length=1000, blank=True, null=True)
     url = models.URLField(unique=True)
     description = models.TextField(blank=True)
     summary = models.TextField(blank=True, null=True)  # AI-generated summary

@@ -138,6 +138,18 @@ class NewsFetcher:
         logger.info(f"Created {articles_created} articles from RSS feeds")
         return articles_created
 
+
+
+    def get_valid_image_url(self, url):
+        """Return a valid image URL or placeholder if missing/invalid."""
+        placeholder = '/static/images/article_placeholder.jpeg'
+        if url and url.strip():
+            return url.strip()[:1000]
+        return placeholder
+
+
+
+
     def create_article_from_newsapi(self, item):
         """Create article from NewsAPI data, ensuring not to create duplicates."""
         try:
@@ -182,8 +194,7 @@ class NewsFetcher:
                 author=item.get('author', '')[:200],  # Limit author length
                 source=item.get('source', {}).get('name', 'NewsAPI')[
                     :200],  # Limit source name length
-                image_url=item.get('urlToImage', '')[
-                    :1000],  # Limit image URL length
+                image_url= self.get_valid_image_url(item.get('urlToImage')),
                 published_date=published_date
             )
             logger.info(f"Created article (NewsAPI): {article.title}")
@@ -230,8 +241,7 @@ class NewsFetcher:
             # Guardian content can be HTML
             content_html = fields.get('body', '')
             author = fields.get('byline', '')
-            image_url = fields.get('thumbnail', '')
-
+            image_url = self.get_valid_image_url(item.get('urlToImage'))
             # Clean HTML from content using BeautifulSoup
             content_text = ''
             if content_html:
@@ -312,11 +322,13 @@ class NewsFetcher:
                 if 'url' in media:
                     image_url = media['url']
             else:
-                img_tag = BeautifulSoup(
-                    description_html, 'html.parser').find('img')
+                img_tag = BeautifulSoup(description_html, 'html.parser').find('img')
                 if img_tag and img_tag.get('src'):
                     image_url = img_tag['src']
 
+            # Fallback to placeholder if still empty
+            image_url = self.get_valid_image_url(item.get('urlToImage'))
+            
             # RSS feeds usually provide summaries, not full content.
             # Full content might require scraping the article URL, which is a more complex task.
             content = ''  # Placeholder for full content if you decide to scrape later
