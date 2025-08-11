@@ -167,6 +167,14 @@ GOOGLE_GEMINI_API_KEY = os.getenv("GOOGLE_GEMINI_API_KEY")
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 GUARDIAN_API_KEY = os.getenv("GUARDIAN_API_KEY")
 
+
+# Add this to your settings.py
+GEMINI_API_KEY = os.getenv('GOOGLE_GEMINI_API_KEY')
+
+# Optional: Add a check to ensure the key is loaded
+if not GEMINI_API_KEY:
+    print("Warning: GEMINI_API_KEY not found in environment variables")
+
 # CORS Headers settings
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -187,4 +195,17 @@ CACHES = {
     }
 }
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}
 

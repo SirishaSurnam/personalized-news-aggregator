@@ -28,4 +28,7 @@ urlpatterns = [
     path('api/articles/', views.ArticleListAPI.as_view(), name='api_articles'),
     path('api/refresh-articles/', views.refresh_articles, name='api_refresh_articles'),
 
+    # Chatbot API
+    path('api/chatbot/', views.chatbot_api, name='chatbot_api'),
+
 ]

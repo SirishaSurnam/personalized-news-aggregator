@@ -47,6 +47,7 @@ def process_article_ai(self, article_id):
     try:
         article = Article.objects.get(id=article_id)
         content = article.content or article.description or ""
+        logger.info(f"[📝] Processing article {article.id} titled '{article.title}' — content length: {len(content)}")
         if not content:
             logger.warning(f"[⚠️] Empty content for article {article_id}")
             return

@@ -25,11 +25,13 @@ class Category(models.Model):
 
 class Article(models.Model):
     BIAS_CHOICES = [
-        ('LEFT', 'Left-leaning'),
-        ('RIGHT', 'Right-leaning'),
         ('NEUTRAL', 'Neutral'),
+        ('LEFT-LEANING', 'Left-Leaning'),
+        ('RIGHT-LEANING', 'Right-Leaning'),
+        ('MIXED', 'Mixed'),
         ('UNKNOWN', 'Unknown'),
     ]
+    
     title = models.CharField(max_length=500, db_index=True)
     image_url = models.URLField(max_length=1000, blank=True, null=True)
     url = models.URLField(unique=True)
@@ -46,7 +48,7 @@ class Article(models.Model):
     # AI-generated fields
     summary = models.TextField(blank=True)
     bias_score = models.CharField(
-        max_length=10,
+        max_length=15,
         choices=BIAS_CHOICES,
         default='UNKNOWN',
         db_index=True

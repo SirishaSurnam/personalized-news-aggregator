@@ -16,9 +16,7 @@ from .tasks import process_article_ai
 from django.views.decorators.csrf import csrf_exempt
 
 from .tasks import fetch_latest_news
-
-
-
+import json
 
 
 def home(request):
@@ -177,8 +175,87 @@ class ArticleListAPI(generics.ListAPIView):
 
 
 
+@login_required
+def dashboard(request):
+    # Get user interests
+    user_categories = UserInterest.objects.filter(
+        user=request.user
+    ).values_list('category', flat=True)
+
+    # Start with articles from those categories
+    articles = Article.objects.filter(
+        categories__in=user_categories
+    ).distinct()
+
+    # Filters from request
+    search_query = request.GET.get('search', '')
+    category_filter = request.GET.get('category', '')
+    bias_filter = request.GET.get('bias', '')
+
+    if search_query:
+        articles = articles.filter(
+            Q(title__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+
+    if category_filter:
+        articles = articles.filter(categories__slug=category_filter)
+    '''
+    if bias_filter:
+        articles = articles.filter(bias_score=bias_filter)
+    '''
+
+    print(f"Bias filter selected: '{bias_filter}'")
+    print(f"Articles before bias filter: {articles.count()}")
+    if bias_filter:
+        articles = articles.filter(bias_score=bias_filter)
+        print(f"Articles after bias filter: {articles.count()}")
 
 
+    bias_choices = Article.BIAS_CHOICES
+    
+    ''' 
+    if bias_filter:
+    
+
+    # Get only the bias options that actually exist in DB
+    available_bias = (
+        Article.objects
+        .exclude(bias_score__isnull=True)
+        .exclude(bias_score='')
+        .exclude(bias_score='UNKNOWN')  # exclude unknown from filter
+        .values_list('bias_score', flat=True)
+        .distinct()
+    )
+    
+    bias_choices = [
+        (code, label)
+        for code, label in Article.BIAS_CHOICES
+        if code in available_bias
+    ]
+
+    bias_choices = [
+        (code, label)
+        for code, label in Article.BIAS_CHOICES
+        if code.strip().upper() in [b.upper() for b in available_bias]
+    ]
+    ''' 
+    # Pagination
+    paginator = Paginator(articles, 9)  # 9 per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'dashboard.html', {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'category_filter': category_filter,
+        'bias_filter': bias_filter,
+        'categories': Category.objects.all(),
+        'bias_choices': bias_choices,
+    })
+
+
+'''
 # apps/news/views.py
 # from django.contrib.auth.decorators import login_required
 
@@ -197,6 +274,42 @@ def dashboard(request):
     bias_filter = request.GET.get('bias', '')
     if bias_filter:
         articles = articles.filter(bias_score=bias_filter)
+    
+
+
+    # Fetch distinct bias values present in DB
+    available_bias = (
+        Article.objects
+        .exclude(bias_score__isnull=True)
+        .exclude(bias_score='')
+        .values_list('bias_score', flat=True)
+        .distinct()
+    )
+
+    # Map them to human-readable labels (from model choices)
+    bias_choices = [
+        (code, label)
+        for code, label in Article.BIAS_CHOICES
+        if code in available_bias
+    ]
+
+
+    # Pagination (if you already have it)
+    from django.core.paginator import Paginator
+    paginator = Paginator(articles, 9)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'dashboard.html', {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'category_filter': category_filter,
+        'bias_filter': bias_filter,
+        'categories': Category.objects.all(),
+        'bias_choices': bias_choices,  # <-- pass filtered bias list
+    })
+
+
 
     category_filter = request.GET.get('category', '')
     if category_filter:
@@ -214,6 +327,14 @@ def dashboard(request):
         'category_filter': category_filter,
     }
     return render(request, 'dashboard.html', context)
+
+'''
+
+
+
+
+
+
 
 
 @csrf_exempt
@@ -357,3 +478,40 @@ def refresh_articles(request):
     messages.success(request, "📰 News refresh started! Please wait a few seconds.")
     return redirect('home')  # or 'dashboard' if you want
 '''
+
+
+
+
+
+from .chatbot import GeminiNewsChatbot
+
+@csrf_exempt
+def chatbot_api(request):
+    """Lightweight chatbot API endpoint"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST method required'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        user_message = data.get('message', '').strip()
+        
+        if not user_message:
+            return JsonResponse({'response': 'Please ask me something about news!'})
+        
+        # Initialize chatbot with current user
+        chatbot = GeminiNewsChatbot(user=request.user)
+        response = chatbot.get_response(user_message)
+        
+        return JsonResponse({
+            'response': response,
+            'status': 'success'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        logger.error(f"Chatbot API error: {str(e)}")
+        return JsonResponse({
+            'response': 'Sorry, I encountered an error. Please try again!',
+            'status': 'error'
+        })
