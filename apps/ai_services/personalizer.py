@@ -1,9 +1,11 @@
-# apps/ai_services/personalizer.py (new file)
+# apps/ai_services/personalizer.py 
+# TODO: Implement a personalized news recommendation system using user reading history and article embeddings.
+
+
+
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-
-
 class NewsPersonalizer:
     def __init__(self):
         self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')

@@ -214,32 +214,6 @@ def dashboard(request):
 
     bias_choices = Article.BIAS_CHOICES
     
-    ''' 
-    if bias_filter:
-    
-
-    # Get only the bias options that actually exist in DB
-    available_bias = (
-        Article.objects
-        .exclude(bias_score__isnull=True)
-        .exclude(bias_score='')
-        .exclude(bias_score='UNKNOWN')  # exclude unknown from filter
-        .values_list('bias_score', flat=True)
-        .distinct()
-    )
-    
-    bias_choices = [
-        (code, label)
-        for code, label in Article.BIAS_CHOICES
-        if code in available_bias
-    ]
-
-    bias_choices = [
-        (code, label)
-        for code, label in Article.BIAS_CHOICES
-        if code.strip().upper() in [b.upper() for b in available_bias]
-    ]
-    ''' 
     # Pagination
     paginator = Paginator(articles, 9)  # 9 per page
     page_number = request.GET.get('page')
@@ -253,88 +227,6 @@ def dashboard(request):
         'categories': Category.objects.all(),
         'bias_choices': bias_choices,
     })
-
-
-'''
-# apps/news/views.py
-# from django.contrib.auth.decorators import login_required
-
-@login_required
-def dashboard(request):
-    user_categories = UserInterest.objects.filter(
-        user=request.user).values_list('category', flat=True)
-    articles = Article.objects.filter(
-        categories__in=user_categories).distinct()
-
-    search_query = request.GET.get('search', '')
-    if search_query:
-        articles = articles.filter(Q(title__icontains=search_query) | Q(
-            description__icontains=search_query))
-
-    bias_filter = request.GET.get('bias', '')
-    if bias_filter:
-        articles = articles.filter(bias_score=bias_filter)
-    
-
-
-    # Fetch distinct bias values present in DB
-    available_bias = (
-        Article.objects
-        .exclude(bias_score__isnull=True)
-        .exclude(bias_score='')
-        .values_list('bias_score', flat=True)
-        .distinct()
-    )
-
-    # Map them to human-readable labels (from model choices)
-    bias_choices = [
-        (code, label)
-        for code, label in Article.BIAS_CHOICES
-        if code in available_bias
-    ]
-
-
-    # Pagination (if you already have it)
-    from django.core.paginator import Paginator
-    paginator = Paginator(articles, 9)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    return render(request, 'dashboard.html', {
-        'page_obj': page_obj,
-        'search_query': search_query,
-        'category_filter': category_filter,
-        'bias_filter': bias_filter,
-        'categories': Category.objects.all(),
-        'bias_choices': bias_choices,  # <-- pass filtered bias list
-    })
-
-
-
-    category_filter = request.GET.get('category', '')
-    if category_filter:
-        articles = articles.filter(categories__slug=category_filter)
-
-    paginator = Paginator(articles, 15)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    context = {
-        'page_obj': page_obj,
-        'categories': Category.objects.all(),
-        'search_query': search_query,
-        'bias_filter': bias_filter,
-        'category_filter': category_filter,
-    }
-    return render(request, 'dashboard.html', context)
-
-'''
-
-
-
-
-
-
 
 
 @csrf_exempt
@@ -383,85 +275,6 @@ def refresh_and_redirect(request):
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
-'''
-# Updated refresh function for web interface
-@csrf_exempt
-@require_POST
-def refresh_and_redirect_web(request):
-    """Web interface refresh - returns JSON response for AJAX"""
-    try:
-        from .tasks import fetch_latest_news
-        fetch_latest_news.delay()
-        return JsonResponse({
-            'status': 'success',
-            'message': '📰 News refresh started! Please wait a few seconds.'
-        })
-    except Exception as e:
-        return JsonResponse({
-            'status': 'error',
-            'message': 'Failed to start news refresh. Please try again.'
-        }, status=500)
-
-# Keep your existing API function for API endpoints
-@api_view(['POST'])
-def refresh_articles(request):
-    """API endpoint for refresh"""
-    try:
-        from .tasks import fetch_latest_news
-        fetch_latest_news.delay()
-        return Response(
-            {'message': 'News refresh started'},
-            status=status.HTTP_202_ACCEPTED
-        )
-    except Exception as e:
-        return Response(
-            {'message': 'Failed to start news refresh'},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-@csrf_exempt  # Optional if you handle CSRF via JS
-@require_POST
-def refresh_and_redirect(request):
-    try:
-        # Trigger Celery task
-        fetch_latest_news.apply_async(queue='default')
-
-        return JsonResponse({
-            "status": "success",
-            "message": "News refresh triggered."
-        })
-    except Exception as e:
-        return JsonResponse({
-            "status": "error",
-            "message": str(e)
-        }, status=500)
-
-# Alternative: You can also modify your existing refresh_and_redirect function
-def refresh_and_redirect(request):
-    """Original redirect-based refresh function"""
-    try:
-        from .tasks import fetch_latest_news
-        fetch_latest_news.delay()
-        messages.success(request, "📰 News refresh started! Please wait a few seconds.")
-        
-        # If it's an AJAX request, return JSON
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({
-                'status': 'success',
-                'message': '📰 News refresh started! Please wait a few seconds.'
-            })
-        
-        return redirect('home')  # Regular redirect for non-AJAX requests
-    except Exception as e:
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Failed to start news refresh'
-            }, status=500)
-        
-        messages.error(request, "Failed to refresh news. Please try again.")
-        return redirect('home')
-'''
 
 @api_view(['POST'])
 def refresh_articles(request):
@@ -471,16 +284,6 @@ def refresh_articles(request):
         {'message': 'News refresh started'},
         status=status.HTTP_202_ACCEPTED
     )
-'''
-    def refresh_and_redirect(request):
-    from .tasks import fetch_latest_news
-    fetch_latest_news.delay()
-    messages.success(request, "📰 News refresh started! Please wait a few seconds.")
-    return redirect('home')  # or 'dashboard' if you want
-'''
-
-
-
 
 
 from .chatbot import GeminiNewsChatbot

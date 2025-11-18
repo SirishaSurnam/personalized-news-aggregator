@@ -3,11 +3,11 @@ from transformers import pipeline
 import torch
 
 
-# ✅ Global model loading - once at startup
+# Global model loading - once at startup
 DEVICE = 0 if torch.cuda.is_available() else -1
 MODEL_NAME = "google/flan-t5-small"
 
-# ✅ Global summarizer instance (created once)
+# Global summarizer instance (created once)
 summarizer_pipeline = pipeline(
     "summarization",
     model=MODEL_NAME,

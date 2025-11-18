@@ -6,7 +6,7 @@ from django.utils.text import slugify
 from datetime import datetime
 import logging
 from bs4 import BeautifulSoup
-from apps.news.models import Article, Category  # Import your models
+from apps.news.models import Article, Category  
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class NewsFetcher:
             # Make the GET request to NewsAPI
             response = requests.get(
                 url, params=params, timeout=30)  # 30 seconds timeout
-            response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+            response.raise_for_status()  # Raise HTTPError for bad responses 
             data = response.json()
 
             articles_created = 0
