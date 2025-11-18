@@ -14,6 +14,7 @@ django-crispy-forms==2.1
 crispy-bootstrap5==0.7
 gunicorn
 
+numpy==1.24.4
 transformers==4.35.0
 sentence-transformers==2.2.2
 torch==2.1.0
@@ -22,5 +23,4 @@ django-redis==5.4.0
 django-celery-results
 # pip install django-celery-beat
 django-celery-beat==2.6.0
-
-pip install psutil
+# pip install psutil
