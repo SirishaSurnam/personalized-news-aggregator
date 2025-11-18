@@ -1,4 +1,81 @@
 # .gitignore
+
+# ============================
+# Python Ignore
+# ============================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# ============================
+# Environment
+# ============================
 .env
+venv/
+env/
+.venv/
+
+# ============================
+# Django
+# ============================
+db.sqlite3
+media/
+staticfiles/
+static/
+logs/
+*.log
+
+# Ignore Django migrations cache
+*/migrations/__pycache__/
+*/migrations/*.pyc
+
+# ============================
+# Redis
+# ============================
+dump.rdb
+*.aof
+
+# ============================
+# Celery
+# ============================
+celerybeat.pid
+celerybeat-schedule
+celerybeat-schedule.db
+celerybeat.lock
+*.db-shm
+*.db-wal
+
+# ============================
+# VS Code
+# ============================
+.vscode/
+.vscode/settings.json
+
+# ============================
+# Git
+# ============================
+*.orig
+
+# ============================
+# Node modules (if ever added)
+# ============================
+node_modules/
+
+# ============================
+# Debug / Temp Files
+# ============================
+*.tmp
+*.temp
+*.swp
+*.bak
+
+# ============================
+# Cache
+# ============================
+.cache/
+coverage/
+
 Instructions.txt
 /workspaces/personalized-news-aggregator/Instructions.txt
